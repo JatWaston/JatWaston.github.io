@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title><![CDATA[编程时间]]></title>
+  <subtitle><![CDATA[Write the code. Change the world.]]></subtitle>
+  <link href="/atom.xml" rel="self"/>
+  <link href="http://jatwaston.github.io/"/>
+  <updated>2015-04-01T01:39:54.000Z</updated>
+  <id>http://jatwaston.github.io/</id>
+  
+  <author>
+    <name><![CDATA[JatWaston]]></name>
+    <email><![CDATA[support@jatwaston.com]]></email>
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[UISearchDisplayController的用法]]></title>
+    <link href="http://jatwaston.github.io/2015/04/01/uisearchdisplay/"/>
+    <id>http://jatwaston.github.io/2015/04/01/uisearchdisplay/</id>
+    <published>2015-04-01T01:33:48.000Z</published>
+    <updated>2015-04-01T01:39:54.000Z</updated>
+    <content type="html"><![CDATA[<p>稍后编辑</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>稍后编辑</p>
+]]>
+    </summary>
+    
+      <category term="iOS" scheme="http://jatwaston.github.io/tags/iOS/"/>
+    
+      <category term="iOS开发" scheme="http://jatwaston.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[Mac下显示隐藏文件]]></title>
+    <link href="http://jatwaston.github.io/2015/03/31/new-post/"/>
+    <id>http://jatwaston.github.io/2015/03/31/new-post/</id>
+    <published>2015-03-31T08:02:14.000Z</published>
+    <updated>2015-04-01T01:41:53.000Z</updated>
+    <content type="html"><![CDATA[<p>在终端输入以下代码:</p>
+<p>显示的代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">defaults write com.apple.finder AppleShowAllFiles -<span class="keyword">bool</span> <span class="keyword">true</span></span><br></pre></td></tr></table></figure>
+<p>隐藏的代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">defaults write com.apple.finder AppleShowAllFiles -<span class="keyword">bool</span> <span class="keyword">false</span></span><br></pre></td></tr></table></figure>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>在终端输入以下代码:</p>
+<p>显示的代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td]]>
+    </summary>
+    
+      <category term="Mac" scheme="http://jatwaston.github.io/tags/Mac/"/>
+    
+      <category term="Mac Tips" scheme="http://jatwaston.github.io/categories/Mac-Tips/"/>
+    
+  </entry>
+  
+</feed>
