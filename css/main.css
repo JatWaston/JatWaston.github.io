@@ -766,7 +766,7 @@ td {
 .post .gist {
   margin: 20px 0;
   border-style: solid;
-  border-color: #ccc;
+  border-color: $baseBorderColor;
   border-width: 1px 0;
   background: #1d1f21;
   padding: 15px 40px 15px 15px;
@@ -1037,11 +1037,8 @@ body {
   -webkit-transform: translateZ(0);
 }
 .sidebar a {
-  color: #999;
+  color: #555;
   border-bottom-color: #555;
-}
-.sidebar a:hover {
-  color: #eee;
 }
 @media (min-width: 768px) and (max-width: 991px) {
   .sidebar {
@@ -1088,9 +1085,6 @@ body {
 .site-state-item:first-child {
   border-left: none;
 }
-.site-state-item a {
-  border-bottom: none;
-}
 .site-state-item-count {
   display: block;
   text-align: center;
@@ -1128,8 +1122,12 @@ body {
   vertical-align: middle;
   margin-right: 10px;
   margin-bottom: 10px;
+  color: #555;
   border-bottom-color: #555;
   font-size: 13px;
+}
+.links-of-author a:hover {
+  color: #999;
 }
 .links-of-author a:before {
   display: inline-block;
@@ -1139,7 +1137,7 @@ body {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #793420;
+  background: #d2262d;
 }
 .sidebar-nav {
   margin: 0;
@@ -1363,6 +1361,10 @@ body {
 .posts-expand .post-meta .post-category-list-link {
   color: #999;
 }
+.posts-expand .post-meta .post-comments-count a {
+  border-bottom: none;
+  color: #999;
+}
 .posts-expand .post-body h2,
 .posts-expand .post-body h3,
 .posts-expand .post-body h4,
@@ -1498,10 +1500,6 @@ body {
 }
 .posts-collapse .post-header {
   position: relative;
-  transition-duration: 0.2s;
-  transition-timing-function: ease-in-out;
-  transition-delay: 0s;
-  transition-property: border;
   border-bottom: 1px dashed #ccc;
 }
 .posts-collapse .post-header::before {
@@ -1515,10 +1513,6 @@ body {
   background: #bbb;
   border-radius: 50%;
   border: 1px solid #fff;
-  transition-duration: 0.2s;
-  transition-timing-function: ease-in-out;
-  transition-delay: 0s;
-  transition-property: background;
 }
 .posts-collapse .post-header:hover {
   border-bottom-color: #666;
@@ -1913,14 +1907,11 @@ p {
   margin: 10px 0;
 }
 a {
-  border-bottom-color: #ccc;
+  border-bottom-color: #bbb;
 }
 hr {
   margin: 20px 0;
   height: 2px;
-}
-li {
-  list-style: circle;
 }
 .btn {
   padding: 0 10px;
@@ -2109,16 +2100,6 @@ li {
 }
 .post-more-link a {
   font-size: 14px;
-  color: #666;
-  background: none;
-  border: none;
-  border-left: 4px solid #666;
-  border-right: 4px solid #666;
-  transition-property: border;
-}
-.post-more-link a:hover {
-  border-left: 6px double #222;
-  border-right: 6px double #222;
 }
 .page-post-detail .post-title,
 .page-post-detail .post-meta {
