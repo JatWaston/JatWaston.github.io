@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="theme-next use-motion theme-next-Mist">
+<html class="theme-next use-motion theme-next-next">
 <head>
   
 
@@ -13,7 +13,7 @@
   <link rel="stylesheet" type="text/css" href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5"/>
 
 
-<link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.0"/>
+<link rel="stylesheet" type="text/css" href="/css/main.css?v=0.4.1"/>
 
 
 
@@ -27,7 +27,7 @@
 
 
 
-    <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.0" />
+    <link rel="shorticon icon" type="image/x-icon" href="/favicon.ico?v=0.4.1" />
 
 
 
@@ -271,17 +271,26 @@
       <p class="site-description motion-element"></p>
       <div class="site-state motion-element">
         <div class="site-state-item site-state-posts">
-          <span class="site-state-item-count">2</span>
-          <span class="site-state-item-name">日志</span>
+          <a href="/archives">
+            <span class="site-state-item-count">2</span>
+            <span class="site-state-item-name">日志</span>
+          </a>
         </div>
+
+        <div class="site-state-item site-state-categories">
+          <a href="/categories">
+            <span class="site-state-item-count">2</span>
+            <span class="site-state-item-name">分类</span>
+          </a>
+        </div>
+
         <div class="site-state-item site-state-tags">
+          <a href="/tags">
             <span class="site-state-item-count">2</span>
             <span class="site-state-item-name">标签</span>
+          </a>
         </div>
-        <div class="site-state-item site-state-pages">
-            <span class="site-state-item-count">4</span>
-            <span class="site-state-item-name">页面</span>
-        </div>
+
       </div>
 
       
@@ -297,11 +306,11 @@
         
           
             <span class="links-of-author-item">
-              <a href="https://github.com/JatWaston">GitHub</a>
+              <a href="https://github.com/JatWaston" target="_blank">GitHub</a>
             </span>
           
             <span class="links-of-author-item">
-              <a href="http://www.zhihu.com/people/JatWaston">知乎</a>
+              <a href="http://www.zhihu.com/people/JatWaston" target="_blank">知乎</a>
             </span>
           
         
@@ -367,9 +376,25 @@
   <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
-      $(".fancybox").fancybox();
+      $('.content img').each(function () {
+        var $image = $(this);
+        var $imageWrapLink = $image.parent('a');
+
+        if ($imageWrapLink.size() < 1) {
+          $imageWrapLink = $image.wrap('<a href="' + this.getAttribute('src') + '"></a>').parent('a');
+        }
+        $imageWrapLink.addClass('fancybox');
+      });
+    });
+    $('.fancybox').fancybox({
+      helpers: {
+        overlay: {
+          locked: false
+        }
+      }
     });
   </script>
+
 
   <script type="text/javascript">
   function hasMobileUA () {
