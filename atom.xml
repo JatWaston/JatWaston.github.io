@@ -4,7 +4,7 @@
   <subtitle><![CDATA[Write the code. Change the world.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://jatwaston.github.io/"/>
-  <updated>2015-04-03T03:23:51.000Z</updated>
+  <updated>2015-04-24T01:32:35.000Z</updated>
   <id>http://jatwaston.github.io/</id>
   
   <author>
@@ -13,6 +13,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[svn冲突的解决方式]]></title>
+    <link href="http://jatwaston.github.io/2015/04/24/svn-revert-solution/"/>
+    <id>http://jatwaston.github.io/2015/04/24/svn-revert-solution/</id>
+    <published>2015-04-24T01:15:38.000Z</published>
+    <updated>2015-04-24T01:32:35.000Z</updated>
+    <content type="html"><![CDATA[<p><code>svn up</code>的时候很经常会出现冲突，今天介绍两种最常见冲突的解决方式</p>
+<h2 id="svn_local_delete,_incoming_delete_upon_update的解决方式">svn local delete, incoming delete upon update的解决方式</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//In your working directory, recreate that conflicting file:</span></span><br><span class="line">$ touch foo</span><br><span class="line"><span class="comment">//Revert that file to the state SVN likes (that means deleted):</span></span><br><span class="line">$ svn revert foo</span><br><span class="line"><span class="comment">//Now delete that file:</span></span><br><span class="line">$ rm foo</span><br><span class="line"><span class="comment">//Conflict resolved:</span></span><br><span class="line">$ svn st</span><br><span class="line"><span class="comment">//Done.</span></span><br></pre></td></tr></table></figure>
+<h2 id="local_unversioned,_incoming_add_upon_update的解决方式">local unversioned, incoming add upon update的解决方式</h2><p>当<code>svn up</code>的时候出现<br><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">C Runtime</span><br><span class="line">&gt;<span class="built_in">local</span> unversioned, incoming <span class="built_in">add</span> upon update</span><br></pre></td></tr></table></figure></p>
+<p>的时候，这是命令行下的svn树冲突了，（文件本身没有改变，只是本地版本库里面出现冲突而已）解决方法如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">svn resolve --accept working ./Runtime</span><br><span class="line"><span class="comment">//Resolved conflicted state of 'Runtime'</span></span><br><span class="line">svn revert ./Runtime</span><br><span class="line"><span class="comment">//Reverted 'Runtime'</span></span><br><span class="line">svn status</span><br></pre></td></tr></table></figure>
+<p>通过以上的步骤就能移除掉本地svn版本库的冲突信息</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p><code>svn up</code>的时候很经常会出现冲突，今天介绍两种最常见冲突的解决方式</p>
+<h2 id="svn_local_delete,_incoming_delete_upon_update的解决方式">svn local delete, incomin]]>
+    </summary>
+    
+      <category term="svn" scheme="http://jatwaston.github.io/tags/svn/"/>
+    
+      <category term="svn &amp; git" scheme="http://jatwaston.github.io/categories/svn-git/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[UISearchDisplayController的用法]]></title>
