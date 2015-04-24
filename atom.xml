@@ -4,7 +4,7 @@
   <subtitle><![CDATA[Write the code. Change the world.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://jatwaston.github.io/"/>
-  <updated>2015-04-24T04:32:24.000Z</updated>
+  <updated>2015-04-24T04:46:58.000Z</updated>
   <id>http://jatwaston.github.io/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="http://jatwaston.github.io/2015/04/24/iOS-Crash/"/>
     <id>http://jatwaston.github.io/2015/04/24/iOS-Crash/</id>
     <published>2015-04-24T02:29:55.000Z</published>
-    <updated>2015-04-24T04:32:24.000Z</updated>
+    <updated>2015-04-24T04:46:58.000Z</updated>
     <content type="html"><![CDATA[<p>转载自：<a href="http://www.cnblogs.com/smileEvday/p/Crash1.html" target="_blank" rel="external">http://www.cnblogs.com/smileEvday/p/Crash1.html</a></p>
 <p>　　开发程序的过程中不管我们已经如何小心，总是会在不经意间遇到程序闪退。脑补一下当你在一群人面前自信的拿着你的App做功能预演的时候，流畅的操作被无情地Crash打断。联想起老罗在发布Smartisan OS的时候说了，他准备了10个手机，如果一台有问题，就换一台，如果10台后挂了他就不做手机了。好了不闲扯了，今天就跟大家一起聊聊iOSCrash文件的组成以及常用的分析工具。</p>
 <p>　　有一个WWDC 2010的视频推荐大家抽空看看，视频名称<a href="https://developer.apple.com/videos/wwdc/2010/?id=317" target="_blank" rel="external">“Understanding Crash Reports on iPhone OS”</a>，该视频详细讲解了Crash文件的结构。当然如果你没时间看的话，不妨阅读以下这篇文章。<br>　　<a id="more"></a></p>
@@ -117,6 +117,77 @@
 </tr>
 </tbody>
 </table>
+<h3 id="Thread_Backtrace">Thread Backtrace</h3><p><img src="http://images.cnitblog.com/blog/302680/201501/052034366876268.png" alt=""><br>发生Crash的线程的Crash调用栈，从上到下分别代表调用顺序，最上面的一个表示抛出异常的位置，依次往下可以看到API的调用顺序。上图的信息表明本次Crash出现xxxViewController的323行，出错的函数调用为orderCountLoadFailed。</p>
+<h3 id="Thread_State">Thread State</h3><p><img src="http://images.cnitblog.com/blog/302680/201501/052036460005028.png" alt=""></p>
+<h3 id="Binary_Images">Binary Images</h3><p><img src="http://images.cnitblog.com/blog/302680/201501/052038193591674.png" alt=""><br>Crash时刻App加载的所有的库，其中第一行是Crash发生时我们App可执行文件的信息，可以看出为armv7，可执行文件的包得uuid位c0f……cd65，解析Crash的时候dsym文件的uuid必须和这个一样才能完成Crash的符号化解析。</p>
+<h2 id="常见的Crash类型">常见的Crash类型</h2><h3 id="Watchdog_timeout">Watchdog timeout</h3><p>Exception Code：0x8badf00d， 不太直观，可以读成“eat bad food”，意思是don‘t block main thread</p>
+<p>紧接着下面会有一段描述：</p>
+<p>Application Specific Information：</p>
+<p>com.xxx.yyy　　 failed to resume in time</p>
+<p>对于此类Crash，我们应该去审视自己App初始化时做的事情是否正确，是否在主线程请求了网络，或者其他耗时的事情卡住了正常初始化流程。</p>
+<p>通常系统允许一个App从启动到可以相应用户事件的时间最多为5S，如果超过了5S，App就会被系统终止掉。在Launch，resume，suspend，quit时都会有相应的时间要求。在Highlight Thread里面我们可以看到被终止时调用到的位置，xxxAppDelegate加上行号。 </p>
+<p>PS. 在连接Xcode调试时为了便于调试，系统会暂时禁用掉Watchdog，所以此类问题的发现需要使用正常的启动模式。</p>
+<h3 id="User_force-quit">User force-quit</h3><p>Exception Codes: 0xdeadfa11, deadfall</p>
+<p>这个强制退出跟我们平时所说的kill掉后台任务操作还不太一样，通常在程序bug造成系统无法响应时可以采用长按电源键，当屏幕出现关机确认画面时按下Home键即可关闭当前程序。</p>
+<h3 id="Low_Memory_termination">Low Memory termination</h3><p>跟一般的Crash结构不太一样，通常有Free pages，Wired Pages，Purgeable pages，largest process 组成，同事会列出当前时刻系统运行所有进程的信息。</p>
+<p>关于Memory warning可以参看我之前写的一篇文章IOS 内存警告 Memory warning level。</p>
+<p>App在运行过程中，系统内存紧张时通常会先发警告，同时把后台挂起的程序终止掉，最终如果还是内存不够的话就会终止掉当前前台的进程。</p>
+<p>当接受到内存警告的事后，我们应该释放尽可能多的内存，Crash其实也可以看做是对App的一种保护。</p>
+<h3 id="Crash_due_to_bugs">Crash due to bugs</h3><p>因为程序bug导致的Crash通常千奇百怪，很难一概而论。大部分情况通过Crash日志就可以定位出问题，当然也不排除部分疑难杂症看半天都不值问题出在哪儿。这个就只能看功底了，一点点找，总是能发现蛛丝马迹。是在看不出来时还可以求助于Google大神，总有人遇到和你一样的Bug </p>
+<h2 id="常见的Exception_Type_&amp;_Exception_Code">常见的Exception Type &amp; Exception Code</h2><h3 id="Exception_Type">Exception Type</h3><p>1）EXC_BAD_ACCESS</p>
+<p>此类型的Excpetion是我们最长碰到的Crash，通常用于访问了不改访问的内存导致。一般EXC_BAD_ACCESS后面的”()”还会带有补充信息。</p>
+<p>SIGSEGV: 通常由于重复释放对象导致，这种类型在切换了ARC以后应该已经很少见到了。</p>
+<p>SIGABRT:  收到Abort信号退出，通常Foundation库中的容器为了保护状态正常会做一些检测，例如插入nil到数组中等会遇到此类错误。</p>
+<p>SEGV:（Segmentation  Violation），代表无效内存地址，比如空指针，未初始化指针，栈溢出等；</p>
+<p>SIGBUS：总线错误，与 SIGSEGV 不同的是，SIGSEGV 访问的是无效地址，而 SIGBUS 访问的是有效地址，但总线访问异常(如地址对齐问题)</p>
+<p>SIGILL：尝试执行非法的指令，可能不被识别或者没有权限</p>
+<p>2）EXC_BAD_INSTRUCTION<br>此类异常通常由于线程执行非法指令导致</p>
+<p>3）EXC_ARITHMETIC<br>除零错误会抛出此类异常</p>
+<h3 id="Exception_Code">Exception Code</h3><table>
+<thead>
+<tr>
+<th>字段</th>
+<th>意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0xbaaaaaad</td>
+<td>此种类型的log意味着该Crash log并非一个真正的Crash，它仅仅只是包含了整个系统某一时刻的运行状态。通常可以通过同时按Home键和音量键，可能由于用户不小心触发</td>
+</tr>
+<tr>
+<td>0xbad22222</td>
+<td>当VOIP程序在后台太过频繁的激活时，系统可能会终止此类程序</td>
+</tr>
+<tr>
+<td>0x8badf00d</td>
+<td>这个前面已经介绍了，程序启动或者恢复时间过长被watch dog终止</td>
+</tr>
+<tr>
+<td>0xc00010ff</td>
+<td>程序执行大量耗费CPU和GPU的运算，导致设备过热，触发系统过热保护被系统终止</td>
+</tr>
+<tr>
+<td>0xdead10cc</td>
+<td>程序退到后台时还占用系统资源，如通讯录被系统终止</td>
+</tr>
+<tr>
+<td>0xdeadfa11</td>
+<td>前面也提到过，程序无响应用户强制关闭</td>
+</tr>
+</tbody>
+</table>
+<h3 id="获取Crash的途径">获取Crash的途径</h3><p>1、本机</p>
+<p>通过xCode连接测试机器，直接在Device中即可读取到该机器上发生的所有Crash log。</p>
+<p>2、itunes connect</p>
+<p>通过itunes connect后台获取到用户上报的Crash日志。</p>
+<p>3、第三方的Crash收集系统</p>
+<p>有很多优秀的第三方Crash收集系统大大的方便了我们收集Crash，甚至还带了符号化Crash日志的功能。比较常用的有<a href="http://www.crashlytics.com/" target="_blank" rel="external">Crashlytics</a>，<a href="http://www.flurry.com/" target="_blank" rel="external">Flurry</a>等。</p>
+<h2 id="附录">附录</h2><p>Apple官方文档：<a href="https://developer.apple.com/library/ios/technotes/tn2151/_index.html#//apple_ref/doc/uid/DTS40008184-CH1-INTRODUCTION" target="_blank" rel="external">Understanding and Analyzing iOS Application Crash Reports</a></p>
+<p>　　　　　　　　<a href="https://developer.apple.com/library/mac/technotes/tn2004/tn2123.html#LISTCRASHLOGEXCEPTION" target="_blank" rel="external">Technical Note TN2123 CrashReporter</a></p>
+<p>　　　　　　　　<a href="https://developer.apple.com/library/ios/qa/qa1592/_index.html" target="_blank" rel="external">https://developer.apple.com/library/ios/qa/qa1592/_index.html</a></p>
+<p>WWDC视频： 　<a href="https://developer.apple.com/videos/wwdc/2010/?id=317" target="_blank" rel="external">Understanding Crash Reports on iPhone OS</a>　　</p>
+<p>　　Crash日志记录的时候是将Crash发生时刻，函数的调用栈，以及线程等信息写入文件。一般都是直接写的16进制地址，如果不经过符号化的话，基本上很难获取到有用信息，下一篇我们将聊一聊Crash日志的符号化，通俗点讲就是让Crash日志变成我们可读的格式。</p>
 ]]></content>
     <summary type="html">
     <![CDATA[<p>转载自：<a href="http://www.cnblogs.com/smileEvday/p/Crash1.html">http://www.cnblogs.com/smileEvday/p/Crash1.html</a></p>
