@@ -18,9 +18,9 @@
 
 
 
-	<meta name="keywords" content="版本控制," />
+	<meta name="keywords" content="iOS,转载," />
 
-  <title> svn冲突的解决方式 // 编程时间 </title>
+  <title> iOS Crash文件的解析 // 编程时间 </title>
 </head>
 
 <body>
@@ -101,7 +101,7 @@
           
           
             
-              svn冲突的解决方式
+              iOS Crash文件的解析
             
           
         </h1>
@@ -119,7 +119,7 @@
             <span class="post-category">
               &nbsp; | &nbsp; 分类于
               
-                <a href="/categories/svn-git/">svn & git</a>
+                <a href="/categories/iOS开发/">iOS开发</a>
 
                 
                 
@@ -133,8 +133,8 @@
           
             <span class="post-comments-count">
             &nbsp; | &nbsp;
-            <a href="/2015/04/24/svn-revert-solution/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/04/24/svn-revert-solution/"></span>
+            <a href="/2015/04/24/iOS-Crash/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/04/24/iOS-Crash/"></span>
             </a>
           </span>
           
@@ -149,12 +149,16 @@
         
 
         
-          <p><code>svn up</code>的时候很经常会出现冲突，今天介绍两种最常见冲突的解决方式</p>
-<h2 id="svn_local_delete,_incoming_delete_upon_update的解决方式">svn local delete, incoming delete upon update的解决方式</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//In your working directory, recreate that conflicting file:</span></span><br><span class="line">$ touch foo</span><br><span class="line"><span class="comment">//Revert that file to the state SVN likes (that means deleted):</span></span><br><span class="line">$ svn revert foo</span><br><span class="line"><span class="comment">//Now delete that file:</span></span><br><span class="line">$ rm foo</span><br><span class="line"><span class="comment">//Conflict resolved:</span></span><br><span class="line">$ svn st</span><br><span class="line"><span class="comment">//Done.</span></span><br></pre></td></tr></table></figure>
-<h2 id="local_unversioned,_incoming_add_upon_update的解决方式">local unversioned, incoming add upon update的解决方式</h2><p>当<code>svn up</code>的时候出现<br><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">C Runtime</span><br><span class="line">&gt;<span class="built_in">local</span> unversioned, incoming <span class="built_in">add</span> upon update</span><br></pre></td></tr></table></figure></p>
-<p>这是命令行下的svn树冲突了，（文件本身没有改变，只是本地版本库里面出现冲突而已）解决方法如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">svn resolve --accept working ./Runtime</span><br><span class="line"><span class="comment">//Resolved conflicted state of 'Runtime'</span></span><br><span class="line">svn revert ./Runtime</span><br><span class="line"><span class="comment">//Reverted 'Runtime'</span></span><br><span class="line">svn status</span><br></pre></td></tr></table></figure>
-<p>通过以上的步骤就能移除掉本地svn版本库的冲突信息</p>
+          <p>转载自：<a href="http://www.cnblogs.com/smileEvday/p/Crash1.html" target="_blank" rel="external">http://www.cnblogs.com/smileEvday/p/Crash1.html</a></p>
+<p>　　开发程序的过程中不管我们已经如何小心，总是会在不经意间遇到程序闪退。脑补一下当你在一群人面前自信的拿着你的App做功能预演的时候，流畅的操作被无情地Crash打断。联想起老罗在发布Smartisan OS的时候说了，他准备了10个手机，如果一台有问题，就换一台，如果10台后挂了他就不做手机了。好了不闲扯了，今天就跟大家一起聊聊iOSCrash文件的组成以及常用的分析工具。</p>
+<p>　　有一个WWDC 2010的视频推荐大家抽空看看，视频名称<a href="https://developer.apple.com/videos/wwdc/2010/?id=317" target="_blank" rel="external">“Understanding Crash Reports on iPhone OS”</a>，该视频详细讲解了Crash文件的结构。当然如果你没时间看的话，不妨阅读以下这篇文章。<br>　　<a id="more"></a></p>
+<h2 id="Crash文件结构">Crash文件结构</h2><p>当程序运行Crash的时候，系统会把运行的最后时刻的运行信息记录下来，存储到一个文件中，也就是我们所说的Crash文件。iOS的Crash日志通常由以下6各部分组成。</p>
+<h3 id="Process_Information(进程信息)">Process Information(进程信息)</h3><p><img src="http://images.cnitblog.com/blog/302680/201412/230718553901251.png" alt=""></p>
+<table class="table table-bordered table-striped table-condensed"><br><tr style="margin-left: 30px;"><br><td style="margin-left: 30px;"><span style="font-size: 12px;">Incident Idnetifier</span></td><br><td style="margin-left: 30px;"><span style="font-size: 12px;">崩溃报告的唯一标识符，不同的Crash</span></td><br></tr><br><tr style="margin-left: 30px;"><br><td style="margin-left: 30px;"><span style="font-size: 12px;">CrashReporter Key</span></td><br><td style="margin-left: 30px;"><span style="font-size: 12px;">设备标识相对应的唯一键值(并非真正的设备的UDID，苹果为了保护用户隐私iOS6以后已经无法获取)。通常同一个设备上同一版本的App发生Crash时，该值都是一样的。</span></td><br></tr><br><tr style="margin-left: 30px;"><br><td style="margin-left: 30px;"><span style="font-size: 12px;">Hardware Model</span></td><br><td style="margin-left: 30px;"><span style="font-size: 12px;">代表发生Crash的设备类型，上图中的&ldquo;iPad4,4&rdquo;代表iPad Air</span></td><br></tr><br><tr style="margin-left: 30px;"><br><td style="margin-left: 30px;"><span style="font-size: 12px;">Process</span></td><br><td style="margin-left: 30px;"><span style="font-size: 12px;">代表Crash的进程名称，通常都是我们的App的名字, []里面是当时进程的ID</span></td><br></tr><br><tr style="margin-left: 30px;"><br><td style="margin-left: 30px;"><span style="font-size: 12px;">Path</span></td><br><td style="margin-left: 30px;"><span style="font-size: 12px;">可执行程序在手机上的存储位置，注意路径时到XXX.app/XXX，XXX.app其实是作为一个Bundle的，真正的可执行文件其实是Bundle里面的XXX，感兴趣的可以自己查一下相关资料，有机会我后面也会介绍到</span></td><br></tr><br><tr style="margin-left: 30px;"><br><td style="margin-left: 30px;"><span style="font-size: 12px;">Identifier</span></td><br><td style="margin-left: 30px;"><span style="font-size: 12px;">你的App的Indentifier，通常为&ldquo;com.xxx.yyy&rdquo;，xxx代表你们公司的域名，yyy代表某一个App</span></td><br></tr><br><tr style="margin-left: 30px;"><br><td style="margin-left: 30px;"><span style="font-size: 12px;">Version</span></td><br><td style="margin-left: 30px;"><span style="font-size: 12px;">当前App的版本号，由Info.plist中的两个字段组成，<code>CFBundleShortVersionString</code>&nbsp;and&nbsp;<code>CFBundleVersion</code></span></td><br></tr><br><tr style="margin-left: 30px;"><br><td style="margin-left: 30px;"><span style="font-size: 12px;">Code Type</span></td><br><td style="margin-left: 30px;"><span style="font-size: 12px;">当前App的CPU架构</span></td><br></tr><br><tr style="margin-left: 30px;"><br><td style="margin-left: 30px;"><span style="font-size: 12px;">Parent Process</span></td><br><td style="margin-left: 30px;"><span style="font-size: 12px;">当前进程的父进程，由于iOS中App通常都是单进程的，一般父进程都是launchd</span></td><br></tr><br></table>
+
+<table><br>   <tr><br>      <td>John</td><br>      <td>Smith</td><br>      <td>123 Main St.</td><br>      <td>Springfield</td><br>   </tr><br>   <tr><br>      <td>Mary</td><br>      <td>Jones</td><br>      <td>456 Pine St.</td><br>      <td>Dover</td><br>   </tr><br>   <tr><br>      <td>Jim</td><br>      <td>Baker</td><br>      <td>789 Park Ave.</td><br>      <td>Lincoln</td><br>   </tr><br></table>
+
+<p>　　</p>
 
         
       </div>
@@ -165,8 +169,12 @@
         
           <div class="post-tags">
             
-              <a href="/tags/版本控制/">
-                #版本控制
+              <a href="/tags/iOS/">
+                #iOS
+              </a>
+            
+              <a href="/tags/转载/">
+                #转载
               </a>
             
           </div>
@@ -176,13 +184,11 @@
           <div class="post-nav">
             <div class="post-nav-prev post-nav-item">
               
-                <a href="/2015/04/24/iOS-Crash/">iOS Crash文件的解析</a>
-              
             </div>
 
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2015/04/01/uisearchdisplay/">UISearchDisplayController的用法</a>
+                <a href="/2015/04/24/svn-revert-solution/">svn冲突的解决方式</a>
               
             </div>
           </div>
@@ -199,8 +205,8 @@
   
     <div class="comments" id="comments">
       
-        <div class="ds-thread" data-thread-key="2015/04/24/svn-revert-solution/"
-             data-title="svn冲突的解决方式" data-url="http://jatwaston.github.io/2015/04/24/svn-revert-solution/">
+        <div class="ds-thread" data-thread-key="2015/04/24/iOS-Crash/"
+             data-title="iOS Crash文件的解析" data-url="http://jatwaston.github.io/2015/04/24/iOS-Crash/">
         </div>
 
       
@@ -290,7 +296,7 @@
         <div class="post-toc">
           
           
-            <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#svn_local_delete,_incoming_delete_upon_update的解决方式"><span class="nav-number">1.</span> <span class="nav-text">svn local delete, incoming delete upon update的解决方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#local_unversioned,_incoming_add_upon_update的解决方式"><span class="nav-number">2.</span> <span class="nav-text">local unversioned, incoming add upon update的解决方式</span></a></li></ol></div>
+            <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Crash文件结构"><span class="nav-number">1.</span> <span class="nav-text">Crash文件结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Process_Information(进程信息)"><span class="nav-number">1.1.</span> <span class="nav-text">Process Information(进程信息)</span></a></li></ol></li></ol></div>
           
         </div>
         <div class="post-toc-indicator-bottom post-toc-indicator"></div>
