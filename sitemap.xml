@@ -2,6 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://jatwaston.github.io/2015/05/04/objc-msgSend-error/</loc>
+    <lastmod>2015-05-04T07:16:02.000Z</lastmod>
+  </url>
+  
+  <url>
     <loc>http://jatwaston.github.io/2015/04/01/uisearchdisplay/</loc>
     <lastmod>2015-04-29T09:36:54.000Z</lastmod>
   </url>

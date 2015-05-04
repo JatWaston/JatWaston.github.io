@@ -4,7 +4,7 @@
   <subtitle><![CDATA[Write the code. Change the world.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://jatwaston.github.io/"/>
-  <updated>2015-04-27T08:50:41.000Z</updated>
+  <updated>2015-05-04T07:16:02.000Z</updated>
   <id>http://jatwaston.github.io/</id>
   
   <author>
@@ -13,6 +13,27 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[objc_msgSend()报错Too many arguments to function call ,expected 0,have 3]]></title>
+    <link href="http://jatwaston.github.io/2015/05/04/objc-msgSend-error/"/>
+    <id>http://jatwaston.github.io/2015/05/04/objc-msgSend-error/</id>
+    <published>2015-05-04T07:13:21.000Z</published>
+    <updated>2015-05-04T07:16:02.000Z</updated>
+    <content type="html"><![CDATA[<p>解决方式：<br><code>Build Setting--&gt; Apple LLVM 6.0 - Preprocessing--&gt; Enable Strict Checking of objc_msgSend Calls</code>  改为 NO</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>解决方式：<br><code>Build Setting--&gt; Apple LLVM 6.0 - Preprocessing--&gt; Enable Strict Checking of objc_msgSend Calls</code>  改为 NO</p>
+]]>
+    </summary>
+    
+      <category term="Xcode" scheme="http://jatwaston.github.io/tags/Xcode/"/>
+    
+      <category term="iOS" scheme="http://jatwaston.github.io/tags/iOS/"/>
+    
+      <category term="iOS开发" scheme="http://jatwaston.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[Python爬虫学习（三）]]></title>
