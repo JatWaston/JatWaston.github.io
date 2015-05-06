@@ -18,9 +18,9 @@
 
 
 
-	<meta name="keywords" content="iOS,转载," />
+	<meta name="keywords" content="Tweaks,转载," />
 
-  <title> iOS Crash文件的解析 // 编程时间 </title>
+  <title> 如何hook那些在IDA中显示为sub_xxx的函数 // 编程时间 </title>
 </head>
 
 <body>
@@ -101,7 +101,7 @@
           
           
             
-              iOS Crash文件的解析
+              如何hook那些在IDA中显示为sub_xxx的函数
             
           
         </h1>
@@ -110,7 +110,7 @@
       <div class="post-meta">
         <span class="post-time">
           
-            发表于 2015-04-24
+            发表于 2015-05-06
           
         </span>
 
@@ -119,7 +119,7 @@
             <span class="post-category">
               &nbsp; | &nbsp; 分类于
               
-                <a href="/categories/iOS开发/">iOS开发</a>
+                <a href="/categories/iOS安全/">iOS安全</a>
 
                 
                 
@@ -133,8 +133,8 @@
           
             <span class="post-comments-count">
             &nbsp; | &nbsp;
-            <a href="/2015/04/24/iOS-Crash/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/04/24/iOS-Crash/"></span>
+            <a href="/2015/05/06/hook-sub-xxx-functions-in-IDA/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/05/06/hook-sub-xxx-functions-in-IDA/"></span>
             </a>
           </span>
           
@@ -149,174 +149,8 @@
         
 
         
-          <p>转载自：<a href="http://www.cnblogs.com/smileEvday/p/Crash1.html" target="_blank" rel="external">http://www.cnblogs.com/smileEvday/p/Crash1.html</a></p>
-<p>　　开发程序的过程中不管我们已经如何小心，总是会在不经意间遇到程序闪退。脑补一下当你在一群人面前自信的拿着你的App做功能预演的时候，流畅的操作被无情地Crash打断。联想起老罗在发布Smartisan OS的时候说了，他准备了10个手机，如果一台有问题，就换一台，如果10台后挂了他就不做手机了。好了不闲扯了，今天就跟大家一起聊聊iOSCrash文件的组成以及常用的分析工具。</p>
-<p>　　有一个WWDC 2010的视频推荐大家抽空看看，视频名称<a href="https://developer.apple.com/videos/wwdc/2010/?id=317" target="_blank" rel="external">“Understanding Crash Reports on iPhone OS”</a>，该视频详细讲解了Crash文件的结构。当然如果你没时间看的话，不妨阅读以下这篇文章。<br>　　<a id="more"></a></p>
-<h2 id="Crash文件结构">Crash文件结构</h2><p>当程序运行Crash的时候，系统会把运行的最后时刻的运行信息记录下来，存储到一个文件中，也就是我们所说的Crash文件。iOS的Crash日志通常由以下6各部分组成。</p>
-<h3 id="Process_Information(进程信息)">Process Information(进程信息)</h3><p><img src="http://images.cnitblog.com/blog/302680/201412/230718553901251.png" alt=""></p>
-<table>
-<thead>
-<tr>
-<th>字段</th>
-<th>意义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Incident Idnetifier</td>
-<td>崩溃报告的唯一标识符，不同的Crash</td>
-</tr>
-<tr>
-<td>CrashReporter Key</td>
-<td>设备标识相对应的唯一键值(并非真正的设备的UDID，苹果为了保护用户隐私iOS6以后已经无法获取)。通常同一个设备上同一版本的App发生Crash时，该值都是一样的。</td>
-</tr>
-<tr>
-<td>Hardware Model</td>
-<td>代表发生Crash的设备类型，上图中的“iPad4,4”代表iPad Air</td>
-</tr>
-<tr>
-<td>Process</td>
-<td>代表Crash的进程名称，通常都是我们的App的名字, []里面是当时进程的ID</td>
-</tr>
-<tr>
-<td>Path</td>
-<td>可执行程序在手机上的存储位置，注意路径时到XXX.app/XXX，XXX.app其实是作为一个Bundle的，真正的可执行文件其实是Bundle里面的XXX，感兴趣的可以自己查一下相关资料，有机会我后面也会介绍到</td>
-</tr>
-<tr>
-<td>Identifier</td>
-<td>你的App的Indentifier，通常为“com.xxx.yyy”，xxx代表你们公司的域名，yyy代表某一个App</td>
-</tr>
-<tr>
-<td>Version</td>
-<td>当前App的版本号，由Info.plist中的两个字段组成，CFBundleShortVersionString and CFBundleVersion</td>
-</tr>
-<tr>
-<td>Code Type</td>
-<td>当前App的CPU架构</td>
-</tr>
-<tr>
-<td>Parent Process</td>
-<td>当前进程的父进程，由于iOS中App通常都是单进程的，一般父进程都是launchd</td>
-</tr>
-</tbody>
-</table>
-<h3 id="Basic_Information">Basic Information</h3><p><img src="http://images.cnitblog.com/blog/302680/201501/052025393435295.png" alt=""></p>
-<table>
-<thead>
-<tr>
-<th>字段</th>
-<th>意义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Date/Time</td>
-<td>Crash发生的时间，可读的字符串</td>
-</tr>
-<tr>
-<td>OS Version</td>
-<td>系统版本，（）内的数字代表的时Bulid号</td>
-</tr>
-<tr>
-<td>Report Version</td>
-<td>Crash日志的格式，目前基本上都是104，不同的version里面包含的字段可能有不同</td>
-</tr>
-</tbody>
-</table>
-<h3 id="Exception（非常重要）">Exception（非常重要）</h3><p><img src="http://images.cnitblog.com/blog/302680/201501/052029230317758.png" alt=""></p>
-<table>
-<thead>
-<tr>
-<th>字段</th>
-<th>意义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Exception Type</td>
-<td>异常类型</td>
-</tr>
-<tr>
-<td>Exception Subtype</td>
-<td>异常子类型</td>
-</tr>
-<tr>
-<td>Crashed Thread</td>
-<td>发生异常的线程号</td>
-</tr>
-</tbody>
-</table>
-<h3 id="Thread_Backtrace">Thread Backtrace</h3><p><img src="http://images.cnitblog.com/blog/302680/201501/052034366876268.png" alt=""><br>发生Crash的线程的Crash调用栈，从上到下分别代表调用顺序，最上面的一个表示抛出异常的位置，依次往下可以看到API的调用顺序。上图的信息表明本次Crash出现xxxViewController的323行，出错的函数调用为orderCountLoadFailed。</p>
-<h3 id="Thread_State">Thread State</h3><p><img src="http://images.cnitblog.com/blog/302680/201501/052036460005028.png" alt=""></p>
-<h3 id="Binary_Images">Binary Images</h3><p><img src="http://images.cnitblog.com/blog/302680/201501/052038193591674.png" alt=""><br>Crash时刻App加载的所有的库，其中第一行是Crash发生时我们App可执行文件的信息，可以看出为armv7，可执行文件的包得uuid位c0f……cd65，解析Crash的时候dsym文件的uuid必须和这个一样才能完成Crash的符号化解析。</p>
-<h2 id="常见的Crash类型">常见的Crash类型</h2><h3 id="Watchdog_timeout">Watchdog timeout</h3><p>Exception Code：0x8badf00d， 不太直观，可以读成“eat bad food”，意思是don‘t block main thread</p>
-<p>紧接着下面会有一段描述：</p>
-<p>Application Specific Information：</p>
-<p>com.xxx.yyy　　 failed to resume in time</p>
-<p>对于此类Crash，我们应该去审视自己App初始化时做的事情是否正确，是否在主线程请求了网络，或者其他耗时的事情卡住了正常初始化流程。</p>
-<p>通常系统允许一个App从启动到可以相应用户事件的时间最多为5S，如果超过了5S，App就会被系统终止掉。在Launch，resume，suspend，quit时都会有相应的时间要求。在Highlight Thread里面我们可以看到被终止时调用到的位置，xxxAppDelegate加上行号。 </p>
-<p>PS. 在连接Xcode调试时为了便于调试，系统会暂时禁用掉Watchdog，所以此类问题的发现需要使用正常的启动模式。</p>
-<h3 id="User_force-quit">User force-quit</h3><p>Exception Codes: 0xdeadfa11, deadfall</p>
-<p>这个强制退出跟我们平时所说的kill掉后台任务操作还不太一样，通常在程序bug造成系统无法响应时可以采用长按电源键，当屏幕出现关机确认画面时按下Home键即可关闭当前程序。</p>
-<h3 id="Low_Memory_termination">Low Memory termination</h3><p>跟一般的Crash结构不太一样，通常有Free pages，Wired Pages，Purgeable pages，largest process 组成，同事会列出当前时刻系统运行所有进程的信息。</p>
-<p>关于Memory warning可以参看我之前写的一篇文章IOS 内存警告 Memory warning level。</p>
-<p>App在运行过程中，系统内存紧张时通常会先发警告，同时把后台挂起的程序终止掉，最终如果还是内存不够的话就会终止掉当前前台的进程。</p>
-<p>当接受到内存警告的事后，我们应该释放尽可能多的内存，Crash其实也可以看做是对App的一种保护。</p>
-<h3 id="Crash_due_to_bugs">Crash due to bugs</h3><p>因为程序bug导致的Crash通常千奇百怪，很难一概而论。大部分情况通过Crash日志就可以定位出问题，当然也不排除部分疑难杂症看半天都不值问题出在哪儿。这个就只能看功底了，一点点找，总是能发现蛛丝马迹。是在看不出来时还可以求助于Google大神，总有人遇到和你一样的Bug </p>
-<h2 id="常见的Exception_Type_&amp;_Exception_Code">常见的Exception Type &amp; Exception Code</h2><h3 id="Exception_Type">Exception Type</h3><p>1）EXC_BAD_ACCESS</p>
-<p>此类型的Excpetion是我们最长碰到的Crash，通常用于访问了不改访问的内存导致。一般EXC_BAD_ACCESS后面的”()”还会带有补充信息。</p>
-<p>SIGSEGV: 通常由于重复释放对象导致，这种类型在切换了ARC以后应该已经很少见到了。</p>
-<p>SIGABRT:  收到Abort信号退出，通常Foundation库中的容器为了保护状态正常会做一些检测，例如插入nil到数组中等会遇到此类错误。</p>
-<p>SEGV:（Segmentation  Violation），代表无效内存地址，比如空指针，未初始化指针，栈溢出等；</p>
-<p>SIGBUS：总线错误，与 SIGSEGV 不同的是，SIGSEGV 访问的是无效地址，而 SIGBUS 访问的是有效地址，但总线访问异常(如地址对齐问题)</p>
-<p>SIGILL：尝试执行非法的指令，可能不被识别或者没有权限</p>
-<p>2）EXC_BAD_INSTRUCTION<br>此类异常通常由于线程执行非法指令导致</p>
-<p>3）EXC_ARITHMETIC<br>除零错误会抛出此类异常</p>
-<h3 id="Exception_Code">Exception Code</h3><table>
-<thead>
-<tr>
-<th>字段</th>
-<th>意义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>0xbaaaaaad</td>
-<td>此种类型的log意味着该Crash log并非一个真正的Crash，它仅仅只是包含了整个系统某一时刻的运行状态。通常可以通过同时按Home键和音量键，可能由于用户不小心触发</td>
-</tr>
-<tr>
-<td>0xbad22222</td>
-<td>当VOIP程序在后台太过频繁的激活时，系统可能会终止此类程序</td>
-</tr>
-<tr>
-<td>0x8badf00d</td>
-<td>这个前面已经介绍了，程序启动或者恢复时间过长被watch dog终止</td>
-</tr>
-<tr>
-<td>0xc00010ff</td>
-<td>程序执行大量耗费CPU和GPU的运算，导致设备过热，触发系统过热保护被系统终止</td>
-</tr>
-<tr>
-<td>0xdead10cc</td>
-<td>程序退到后台时还占用系统资源，如通讯录被系统终止</td>
-</tr>
-<tr>
-<td>0xdeadfa11</td>
-<td>前面也提到过，程序无响应用户强制关闭</td>
-</tr>
-</tbody>
-</table>
-<h3 id="获取Crash的途径">获取Crash的途径</h3><p>1、本机</p>
-<p>通过xCode连接测试机器，直接在Device中即可读取到该机器上发生的所有Crash log。</p>
-<p>2、itunes connect</p>
-<p>通过itunes connect后台获取到用户上报的Crash日志。</p>
-<p>3、第三方的Crash收集系统</p>
-<p>有很多优秀的第三方Crash收集系统大大的方便了我们收集Crash，甚至还带了符号化Crash日志的功能。比较常用的有<a href="http://www.crashlytics.com/" target="_blank" rel="external">Crashlytics</a>，<a href="http://www.flurry.com/" target="_blank" rel="external">Flurry</a>等。</p>
-<h2 id="附录">附录</h2><p>Apple官方文档：<a href="https://developer.apple.com/library/ios/technotes/tn2151/_index.html#//apple_ref/doc/uid/DTS40008184-CH1-INTRODUCTION" target="_blank" rel="external">Understanding and Analyzing iOS Application Crash Reports</a></p>
-<p>　　　　　　　　<a href="https://developer.apple.com/library/mac/technotes/tn2004/tn2123.html#LISTCRASHLOGEXCEPTION" target="_blank" rel="external">Technical Note TN2123 CrashReporter</a></p>
-<p>　　　　　　　　<a href="https://developer.apple.com/library/ios/qa/qa1592/_index.html" target="_blank" rel="external">https://developer.apple.com/library/ios/qa/qa1592/_index.html</a></p>
-<p>WWDC视频： 　<a href="https://developer.apple.com/videos/wwdc/2010/?id=317" target="_blank" rel="external">Understanding Crash Reports on iPhone OS</a>　　</p>
-<p>　　Crash日志记录的时候是将Crash发生时刻，函数的调用栈，以及线程等信息写入文件。一般都是直接写的16进制地址，如果不经过符号化的话，基本上很难获取到有用信息，下一篇我们将聊一聊Crash日志的符号化，通俗点讲就是让Crash日志变成我们可读的格式。</p>
+          <p>转自：<a href="http://www.iosre.com/t/hook-ida-sub-xxx/720" target="_blank" rel="external">http://www.iosre.com/t/hook-ida-sub-xxx/720</a></p>
+<p>唉，说起来这就是一个坑，Cydia Substrate在其文档中也没找到详细说明，最后也只能来看看代码曾半仙最早给的那份substrate-master源码，然后一切就了然于胸了，这个坑很大，很大！！！<br>现在我们先来看下MSHookFunction怎么Hook IDA中的sub_xxxx函数，然后再来谈谈为啥是这样的。<a id="more"></a><br><img src="http://7xijmx.com1.z0.glb.clouddn.com/645a3bc22fb63bec.jpg" alt=""><br>就以这段代码为例吧，下断点红色选中部分，中的sub_17C94就是我想要Hook的函数，首先确认了下参数个数为2个。<br>以下给出代码片段截图：<br><img src="http://7xijmx.com1.z0.glb.clouddn.com/a23609255bcca09b.png" alt=""><br>看到这里我想很多人有点不理解，为啥需要 | 0x00000001，别急，下面我就借花献佛，慢慢道来也。<br>既然源头是出现在MSHookFunction上，那们我们就去阅读下这块的代码:<br><img src="http://7xijmx.com1.z0.glb.clouddn.com/0c8609977fa3bbc4.jpg" alt=""><br><img src="http://7xijmx.com1.z0.glb.clouddn.com/a25d0b61f1a8edcd.jpg" alt=""><br>从这2 段代码中可以很明显的看到在SubstrateHookFunction中，看到这么一句<br><code>if ((reinterpret_cast(symbol) &amp; 0x1) == 0)</code><br>也就是说，MSHookFunction在判断Hook函数的时候，是通过在传到进来函数地址的奇偶数来判断是ARM指令的函数，还是Thumb指令的函数。<br>这个坑好大，我勒个去啊！！！<br>别急，接下来看这句<br><code>reinterpret_cast(reinterpret_cast(symbol) &amp; ~0x1)</code><br>判断完后，为了能正确Hook地址，又改回原来的地址了，这下变清楚了吧。<br>再者，从MSFindSymbol函数中也能清楚的看到<strong>value |= 0x00000001</strong>这句！！！</p>
 
         
       </div>
@@ -327,8 +161,8 @@
         
           <div class="post-tags">
             
-              <a href="/tags/iOS/">
-                #iOS
+              <a href="/tags/Tweaks/">
+                #Tweaks
               </a>
             
               <a href="/tags/转载/">
@@ -342,13 +176,11 @@
           <div class="post-nav">
             <div class="post-nav-prev post-nav-item">
               
-                <a href="/2015/04/25/Python-Spider-1/">Python爬虫学习（一）</a>
-              
             </div>
 
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2015/04/24/svn-revert-solution/">svn冲突的解决方式</a>
+                <a href="/2015/05/04/objc-msgSend-error/">objc_msgSend()报错Too many arguments to function call ,expected 0,have 3</a>
               
             </div>
           </div>
@@ -365,8 +197,8 @@
   
     <div class="comments" id="comments">
       
-        <div class="ds-thread" data-thread-key="2015/04/24/iOS-Crash/"
-             data-title="iOS Crash文件的解析" data-url="http://jatwaston.github.io/2015/04/24/iOS-Crash/">
+        <div class="ds-thread" data-thread-key="2015/05/06/hook-sub-xxx-functions-in-IDA/"
+             data-title="如何hook那些在IDA中显示为sub_xxx的函数" data-url="http://jatwaston.github.io/2015/05/06/hook-sub-xxx-functions-in-IDA/">
         </div>
 
       
@@ -456,7 +288,7 @@
         <div class="post-toc">
           
           
-            <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Crash文件结构"><span class="nav-number">1.</span> <span class="nav-text">Crash文件结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Process_Information(进程信息)"><span class="nav-number">1.1.</span> <span class="nav-text">Process Information(进程信息)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Basic_Information"><span class="nav-number">1.2.</span> <span class="nav-text">Basic Information</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Exception（非常重要）"><span class="nav-number">1.3.</span> <span class="nav-text">Exception（非常重要）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Thread_Backtrace"><span class="nav-number">1.4.</span> <span class="nav-text">Thread Backtrace</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Thread_State"><span class="nav-number">1.5.</span> <span class="nav-text">Thread State</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Binary_Images"><span class="nav-number">1.6.</span> <span class="nav-text">Binary Images</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常见的Crash类型"><span class="nav-number">2.</span> <span class="nav-text">常见的Crash类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Watchdog_timeout"><span class="nav-number">2.1.</span> <span class="nav-text">Watchdog timeout</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#User_force-quit"><span class="nav-number">2.2.</span> <span class="nav-text">User force-quit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Low_Memory_termination"><span class="nav-number">2.3.</span> <span class="nav-text">Low Memory termination</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Crash_due_to_bugs"><span class="nav-number">2.4.</span> <span class="nav-text">Crash due to bugs</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常见的Exception_Type_&_Exception_Code"><span class="nav-number">3.</span> <span class="nav-text">常见的Exception Type & Exception Code</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Exception_Type"><span class="nav-number">3.1.</span> <span class="nav-text">Exception Type</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Exception_Code"><span class="nav-number">3.2.</span> <span class="nav-text">Exception Code</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取Crash的途径"><span class="nav-number">3.3.</span> <span class="nav-text">获取Crash的途径</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录"><span class="nav-number">4.</span> <span class="nav-text">附录</span></a></li></ol></div>
+            <p class="post-toc-empty">此文章未包含目录</p>
           
         </div>
         <div class="post-toc-indicator-bottom post-toc-indicator"></div>

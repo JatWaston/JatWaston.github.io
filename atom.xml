@@ -4,7 +4,7 @@
   <subtitle><![CDATA[Write the code. Change the world.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://jatwaston.github.io/"/>
-  <updated>2015-05-04T07:16:02.000Z</updated>
+  <updated>2015-05-06T10:57:36.000Z</updated>
   <id>http://jatwaston.github.io/</id>
   
   <author>
@@ -13,6 +13,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[如何hook那些在IDA中显示为sub_xxx的函数]]></title>
+    <link href="http://jatwaston.github.io/2015/05/06/hook-sub-xxx-functions-in-IDA/"/>
+    <id>http://jatwaston.github.io/2015/05/06/hook-sub-xxx-functions-in-IDA/</id>
+    <published>2015-05-06T08:54:23.000Z</published>
+    <updated>2015-05-06T10:57:36.000Z</updated>
+    <content type="html"><![CDATA[<p>转自：<a href="http://www.iosre.com/t/hook-ida-sub-xxx/720" target="_blank" rel="external">http://www.iosre.com/t/hook-ida-sub-xxx/720</a></p>
+<p>唉，说起来这就是一个坑，Cydia Substrate在其文档中也没找到详细说明，最后也只能来看看代码曾半仙最早给的那份substrate-master源码，然后一切就了然于胸了，这个坑很大，很大！！！<br>现在我们先来看下MSHookFunction怎么Hook IDA中的sub_xxxx函数，然后再来谈谈为啥是这样的。<a id="more"></a><br><img src="http://7xijmx.com1.z0.glb.clouddn.com/645a3bc22fb63bec.jpg" alt=""><br>就以这段代码为例吧，下断点红色选中部分，中的sub_17C94就是我想要Hook的函数，首先确认了下参数个数为2个。<br>以下给出代码片段截图：<br><img src="http://7xijmx.com1.z0.glb.clouddn.com/a23609255bcca09b.png" alt=""><br>看到这里我想很多人有点不理解，为啥需要 | 0x00000001，别急，下面我就借花献佛，慢慢道来也。<br>既然源头是出现在MSHookFunction上，那们我们就去阅读下这块的代码:<br><img src="http://7xijmx.com1.z0.glb.clouddn.com/0c8609977fa3bbc4.jpg" alt=""><br><img src="http://7xijmx.com1.z0.glb.clouddn.com/a25d0b61f1a8edcd.jpg" alt=""><br>从这2 段代码中可以很明显的看到在SubstrateHookFunction中，看到这么一句<br><code>if ((reinterpret_cast(symbol) &amp; 0x1) == 0)</code><br>也就是说，MSHookFunction在判断Hook函数的时候，是通过在传到进来函数地址的奇偶数来判断是ARM指令的函数，还是Thumb指令的函数。<br>这个坑好大，我勒个去啊！！！<br>别急，接下来看这句<br><code>reinterpret_cast(reinterpret_cast(symbol) &amp; ~0x1)</code><br>判断完后，为了能正确Hook地址，又改回原来的地址了，这下变清楚了吧。<br>再者，从MSFindSymbol函数中也能清楚的看到<strong>value |= 0x00000001</strong>这句！！！</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>转自：<a href="http://www.iosre.com/t/hook-ida-sub-xxx/720">http://www.iosre.com/t/hook-ida-sub-xxx/720</a></p>
+<p>唉，说起来这就是一个坑，Cydia Substrate在其文档中也没找到详细说明，最后也只能来看看代码曾半仙最早给的那份substrate-master源码，然后一切就了然于胸了，这个坑很大，很大！！！<br>现在我们先来看下MSHookFunction怎么Hook IDA中的sub_xxxx函数，然后再来谈谈为啥是这样的。]]>
+    
+    </summary>
+    
+      <category term="Tweaks" scheme="http://jatwaston.github.io/tags/Tweaks/"/>
+    
+      <category term="转载" scheme="http://jatwaston.github.io/tags/%E8%BD%AC%E8%BD%BD/"/>
+    
+      <category term="iOS安全" scheme="http://jatwaston.github.io/categories/iOS%E5%AE%89%E5%85%A8/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[objc_msgSend()报错Too many arguments to function call ,expected 0,have 3]]></title>
