@@ -18,9 +18,9 @@
 
 
 
-	<meta name="keywords" content="Python," />
+	<meta name="keywords" content="iOS,转载," />
 
-  <title> Python爬虫学习（二） // 编程时间 </title>
+  <title> 关于Xcode的Other Linker Flags // 编程时间 </title>
 </head>
 
 <body>
@@ -101,7 +101,7 @@
           
           
             
-              Python爬虫学习（二）
+              关于Xcode的Other Linker Flags
             
           
         </h1>
@@ -110,7 +110,7 @@
       <div class="post-meta">
         <span class="post-time">
           
-            发表于 2015-04-25
+            发表于 2015-05-11
           
         </span>
 
@@ -119,7 +119,7 @@
             <span class="post-category">
               &nbsp; | &nbsp; 分类于
               
-                <a href="/categories/Python开发/">Python开发</a>
+                <a href="/categories/iOS开发/">iOS开发</a>
 
                 
                 
@@ -133,8 +133,8 @@
           
             <span class="post-comments-count">
             &nbsp; | &nbsp;
-            <a href="/2015/04/25/Python-Spider-2/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/04/25/Python-Spider-2/"></span>
+            <a href="/2015/05/11/Other-Linker-Flags/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/05/11/Other-Linker-Flags/"></span>
             </a>
           </span>
           
@@ -149,21 +149,17 @@
         
 
         
-          <h2 id="回顾">回顾</h2><p>　　上一次我们编写了一个最简单的勉强称的上爬虫的<a href="http://jatwaston.github.io/2015/04/25/Python-Spider-1/" target="_blank" rel="external">代码</a>，基本上什么事情都没做，只是简单的获取了百度的首页内容，离我们想要的真正爬虫还差远了，今天我们就来进阶一下吧，把获取回来的网页内容进行解析，获取自己想要内容，开始吧，骚年！<br>　　<a id="more"></a></p>
-<h2 id="如何解析网页内容">如何解析网页内容</h2><h3 id="通过字符串直接解析">通过字符串直接解析</h3><p>　　我们知道通过urllib2获取回来的网页内容是字符串，那我们就可以直接使用Python里面字符串的api进行拆分，解析，来获取我们想要的内容，虽然这种方式效率比较低下，但也不失为一种方式，不过我们今天不讲这种方法，我们来讲正则表达式。</p>
-<h3 id="通过正则表达式">通过正则表达式</h3><p>　　何为正则表达式呢？大百度的解释是:</p>
-<p><blockquote class="blockquote-center">正则表达式，又称正规表示法、常规表示法（英语：Regular Expression，在代码中常简写为regex、regexp或RE），计算机科学的一个概念。正则表达式使用单个字符串来描述、匹配一系列符合某个句法规则的字符串。在很多文本编辑器里，正则表达式通常被用来检索、替换那些符合某个模式的文本。</blockquote><br>今天我们讲解的重点内容也不是如何编写正则表达式来匹配我们想要的内容，网络上已经有很多讲解如何编写正则表达式了，如果大家想了解的，可以直接查看该<a href="http://www.cnblogs.com/huxi/archive/2010/07/04/1771073.html" target="_blank" rel="external">链接</a>，解释的很清楚了，我这边就不啰嗦了，我倡导拿来主义，直接上手项目来学习正则表达式，边做项目边学，开搞吧！</p>
-<h2 id="获取淘宝MM的照片和资料">获取淘宝MM的照片和资料</h2><p>　　都说程序猿无妹子，那么今天我们就来获取一些妹子的资料，嘿嘿！<br>　　<img src="http://7xijmx.com1.z0.glb.clouddn.com/1.png" alt=""></p>
-<h3 id="获取淘宝MM网站内容">获取淘宝MM网站内容</h3><p><code>taobaoMM.py</code></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#-*-coding:utf-8-*-</span></span><br><span class="line"><span class="keyword">import</span> urllib2 <span class="comment">#引入python自带的urllib2库</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fetchWebPage</span><span class="params">(url)</span>:</span></span><br><span class="line">	request = urllib2.Request(url)</span><br><span class="line">	<span class="comment">#伪造UA</span></span><br><span class="line">	request.add_header(<span class="string">'User-Agent'</span>, <span class="string">'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36'</span>)</span><br><span class="line">	response = urllib2.urlopen(request)</span><br><span class="line">	details = response.read().decode(<span class="string">"gbk"</span>).encode(<span class="string">"utf-8"</span>) <span class="comment">#gbk转换为utf-8</span></span><br><span class="line">	<span class="keyword">return</span> details; <span class="comment">#返回结果</span></span><br><span class="line"></span><br><span class="line">htmlContent = fetchWebPage(<span class="string">"http://mm.taobao.com/search_tstar_model.htm"</span>)</span><br><span class="line"><span class="keyword">print</span> htmlContent</span><br></pre></td></tr></table></figure>
-<h3 id="查看网页源码，找到自己感兴趣的内容">查看网页源码，找到自己感兴趣的内容</h3><p>　　打开<a href="http://mm.taobao.com/search_tstar_model.htm" target="_blank" rel="external">淘宝MM</a>的链接，通过Chrome开发者工具我们会看到如下内容：<br>　　<img src="http://7xijmx.com1.z0.glb.clouddn.com/mm1.png" alt=""><br>接下来我们再深入进去查看淘宝MM所在的标签，最后我们定位到下面这个标签<br><img src="http://7xijmx.com1.z0.glb.clouddn.com/mm4.png" alt=""><br>好了，前期准备工作结束，下面开始具体的解析编码阶段，想想还有点小激动呢！<br><img src="http://7xijmx.com1.z0.glb.clouddn.com/1.png" alt=""></p>
-<h3 id="解析内容">解析内容</h3><p>　　原以为通过以上的<code>taobaoMM.py</code>代码可以获取到网页的所有内容，可惜的是淘宝MM所在标签是通过动态从服务器后台获取的，使用上面的代码获取出来的结果如下：<br>　　<img src="http://7xijmx.com1.z0.glb.clouddn.com/屏幕快照 2015-04-25 下午5.52.40.png" alt=""><br>看到没有，淘宝MM所在的标签竟然是空的，它竟是空的！这叫我如何是好啊，不过不用担心，我们还有Chrome开发利器，通过它我们来看看这些是如何从后台获取到数据进行填充的。<br>最后查看到的请求如下：<br><img src="http://7xijmx.com1.z0.glb.clouddn.com/5.59.58.png" alt=""><br><img src="http://7xijmx.com1.z0.glb.clouddn.com/6.00.22.png" alt=""><br>其实它是发出了一个post请求，请求的url为<code>http://mm.taobao.com/tstar/search/tstar_model.do?_input_charset=utf-8</code>,post的数据为<br><img src="http://7xijmx.com1.z0.glb.clouddn.com/6.05.17.png" alt=""><br>这下我们就更简单了，直接发个post请求，带上需要填充的数据，对返回的json直接解析就好了，开工吧！<br><code>taobaoMM.py</code></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#-*-coding:utf-8-*-</span></span><br><span class="line"><span class="keyword">import</span> urllib2 <span class="comment">#引入python自带的urllib2库</span></span><br><span class="line"><span class="keyword">import</span> urllib <span class="comment">#引入python自带的urllib库</span></span><br><span class="line"><span class="keyword">import</span> json <span class="comment">#解析json使用</span></span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line">url = <span class="string">'http://mm.taobao.com/tstar/search/tstar_model.do?_input_charset=utf-8'</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fetchWebPage</span><span class="params">(url)</span>:</span></span><br><span class="line">	request = urllib2.Request(url)</span><br><span class="line">	<span class="comment">#伪造UA</span></span><br><span class="line">	request.add_header(<span class="string">'User-Agent'</span>, <span class="string">'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36'</span>)</span><br><span class="line">	response = urllib2.urlopen(request)</span><br><span class="line">	details = response.read().decode(<span class="string">"gbk"</span>).encode(<span class="string">"utf-8"</span>) <span class="comment">#gbk转换为utf-8</span></span><br><span class="line">	<span class="keyword">return</span> details; <span class="comment">#返回结果</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">postRequest</span><span class="params">(url,values)</span>:</span></span><br><span class="line">	data = urllib.urlencode(values)</span><br><span class="line">	request = urllib2.Request(url,data)</span><br><span class="line">	response = urllib2.urlopen(request)</span><br><span class="line">	json = response.read().decode(<span class="string">"gbk"</span>).encode(<span class="string">"utf-8"</span>) <span class="comment">#gbk转换为utf-8</span></span><br><span class="line">	<span class="keyword">return</span> json; <span class="comment">#返回结果</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">saveImage</span><span class="params">(imageURL,fileName)</span>:</span></span><br><span class="line">	response = urllib2.urlopen(imageURL)</span><br><span class="line">	imageData = response.read()</span><br><span class="line">	f = open(fileName,<span class="string">'wb'</span>)</span><br><span class="line">	f.write(imageData)</span><br><span class="line">	f.close()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">mkdir</span><span class="params">(path)</span>:</span></span><br><span class="line">	path = path.strip()</span><br><span class="line">	isExist = os.path.exists(path)</span><br><span class="line">	<span class="keyword">if</span> <span class="keyword">not</span> isExist:</span><br><span class="line">		os.mkdir(path)</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">True</span></span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">False</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># htmlContent = fetchWebPage("http://mm.taobao.com/search_tstar_model.htm")</span></span><br><span class="line">values = &#123;<span class="string">'viewFlag'</span>:<span class="string">'A'</span>,<span class="string">'sortType'</span>:<span class="string">'default'</span>,<span class="string">'currentPage'</span>:<span class="string">'1'</span>,<span class="string">'pageSize'</span>:<span class="string">'100'</span>&#125;</span><br><span class="line">jsonData = postRequest(url,values)</span><br><span class="line">jsonDic = json.loads(jsonData)</span><br><span class="line">contentList = jsonDic[<span class="string">'data'</span>][<span class="string">'searchDOList'</span>];</span><br><span class="line"><span class="comment"># count = count(jsonDic['data']['searchDOList'])</span></span><br><span class="line"><span class="comment"># mkdir("Images")</span></span><br><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> contentList:</span><br><span class="line">	<span class="comment"># mkdir(item['realName'])</span></span><br><span class="line">	filePath = <span class="string">"Images"</span> + <span class="string">"/"</span> + item[<span class="string">'realName'</span>];</span><br><span class="line">	mkdir(filePath)</span><br><span class="line">	fileName = filePath + <span class="string">"/avatar.jpg"</span>;</span><br><span class="line">	saveImage(item[<span class="string">'avatarUrl'</span>],fileName)</span><br></pre></td></tr></table></figure>
-<p>这样我们就可以获取到淘宝MM的封面图了，接下来我们再来获取单个淘宝MM详情页的图片，这个时候就需要用到正则表达式来匹配内容了，首先先通过Chrome开发者工具来查看详情页的标签，定位到想要获取图片的标签，如图所示：<br><img src="http://7xijmx.com1.z0.glb.clouddn.com/4.23.55.png" alt=""><br>最后定位的标签格式大致如此<br><code>&lt;img style=&quot;float: none;margin: 10.0px;&quot; src=&quot;http://img03.taobaocdn.com/imgextra/i3/745790526/T2qKS4XAxaXXXXXXXX_!!745790526.jpg&quot;&gt;</code><br>src后面就是我们想要的图片了，编写的获取图片代码如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">detailImages</span><span class="params">(url)</span>:</span></span><br><span class="line">	<span class="keyword">print</span> url</span><br><span class="line">	content = fetchWebPage(url)</span><br><span class="line">	pattern = re.compile(<span class="string">'&lt;img style="float: none;margin: 10.0px;" src="(.*?)"/&gt;'</span>) <span class="comment">#正则匹配</span></span><br><span class="line">	items = re.findall(pattern,content);</span><br><span class="line">	<span class="keyword">return</span> items;</span><br></pre></td></tr></table></figure>
-<p>大功告成了！不过这边有个问题，就是淘宝MM的详情页有防盗刷的机制，好像多请求几次后会要求用户登录，这个问题我们下次讲模拟登录的时候再来处理，我这次为了防止登录所以只采集了一个页面的图片数据，还不会要求我登录。</p>
-<h3 id="存起来，慢慢欣赏">存起来，慢慢欣赏</h3><p>最后保存的结果如下：<br><img src="http://7xijmx.com1.z0.glb.clouddn.com/4.37.12.png" alt=""><br>这样我们就拿到了封面图和详情页面的所有图片了。</p>
-<h2 id="后记">后记</h2><p>　　这次本以为需要用到正则来处理网页的结果，可惜爬取回来的网页竟然不包含动态的内容，所以只能另外寻找方法，最后却直接找到api来直接显示结果，发个post请求直接返回json，也算是很方便了，代码也已上传到Github上了，大家可以直接从<a href="https://github.com/JatWaston/PySpider/tree/master/PySpider/TaobaoMM" target="_blank" rel="external">这里</a>下载。</p>
+          <p>转自：<a href="http://blog.csdn.net/meegomeego/article/details/19343423" target="_blank" rel="external">http://blog.csdn.net/meegomeego/article/details/19343423</a><br><a id="more"></a></p>
+<h2 id="背景">背景</h2><p>在ios开发过程中，有时候会用到第三方的静态库(.a文件)，然后导入后发现编译正常但运行时会出现<code>selector not recognized</code>的错误，从而导致app闪退。接着仔细阅读库文件的说明文档，你可能会在文档中发现诸如在<code>Other Linker Flags</code>中加入-<code>ObjC</code>或者<code>-all_load</code>这样的解决方法。<br>那么，<code>Other Linker Flags</code>到底是用来干什么的呢？还有<code>-ObjC</code>和<code>-all_load</code>到底发挥了什么作用呢？</p>
+<h2 id="链接器">链接器</h2><p>首先，要说明一下<code>Other Linker Flags</code>到底是用来干嘛的。说白了，就是<code>ld</code>命令除了默认参数外的其他参数。<code>ld</code>命令实现的是链接器的工作，详细说明可以在终端<code>man ld</code>查看。<br>如果有人不清楚链接器是什么东西的话，我可以作个简单的说明。<br>一个程序从简单易读的代码到可执行文件往往要经历以下步骤：</p>
+<p><blockquote class="blockquote-left">源代码 &gt; 预处理器 &gt; 编译器 &gt; 汇编器 &gt; 机器码 &gt; 链接器 &gt; 可执行文件 </blockquote><br>源文件经过一系列处理以后，会生成对应的<code>.obj</code>文件，然后一个项目必然会有许多<code>.obj</code>文件，并且这些文件之间会有各种各样的联系，例如函数调用。链接器做的事就是把这些目标文件和所用的一些库链接在一起形成一个完整的可执行文件。<br>可能我描述的比较肤浅，因为我自己了解的也不是很深，建议大家读一下这篇文章，可以对链接器做的事情有个大概的了解：<a href="http://www.dutor.net/index.php/2012/02/what-linkers-do/" target="_blank" rel="external">链接器做了什么</a></p>
+<h2 id="为什么会闪退">为什么会闪退</h2><p>苹果官方Q&amp;A上有这么一段话：</p>
+<p><blockquote class="blockquote-left">The “selector not recognized” runtime exception occurs due to an issue between the implementation of standard UNIX static libraries, the linker and the dynamic nature of Objective-C. Objective-C does not define linker symbols for each function (or method, in Objective-C) - instead, linker symbols are only generated for each class. If you extend a pre-existing class with categories, the linker does not know to associate the object code of the core class implementation and the category implementation. This prevents objects created in the resulting application from responding to a selector that is defined in the category. </blockquote><br>翻译过来，大概意思就是<code>Objective-C</code>的链接器并不会为每个方法建立符号表，而是仅仅为类建立了符号表。这样的话，如果静态库中定义了已存在的一个类的分类，链接器就会以为这个类已经存在，不会把分类和核心类的代码合起来。这样的话，在最后的可执行文件中，就会缺少分类里的代码，这样函数调用就失败了。</p>
+<h2 id="解决方法">解决方法</h2><p>解决方法在背景那块我就提到了，就是在Other Linker Flags里加上所需的参数，用到的参数一般有以下3个：<br><code>-ObjC</code>,<code>-all_load</code>,<code>-force_load</code><br><br><br>下面来说说每个参数存在的意义和具体做的事情。<br>首先是<code>-ObjC</code>，一般这个参数足够解决前面提到的问题，苹果官方说明如下：</p>
+<p><blockquote class="blockquote-left">This flag causes the linker to load every object file in the library that defines an Objective-C class or category. While this option will typically result in a larger executable (due to additional object code loaded into the application), it will allow the successful creation of effective Objective-C static libraries that contain categories on existing classes.</blockquote><br>简单说来，加了这个参数后，链接器就会把静态库中所有的<code>Objective-C</code>类和分类都加载到最后的可执行文件中，虽然这样可能会因为加载了很多不必要的文件而导致可执行文件变大，但是这个参数很好地解决了我们所遇到的问题。但是事实真的是这样的吗？<br><br>如果<code>-ObjC</code>参数真的这么有效，那么事情就会简单多了。</p>
+<p><blockquote class="blockquote-left">Important: For 64-bit and iPhone OS applications, there is a linker bug that prevents -ObjC from loading objects files from static libraries that contain only categories and no classes. The workaround is to use the -allload or -forceload flags.</blockquote><br>当静态库中只有分类而没有类的时候，<code>-ObjC</code>参数就会失效了。这时候，就需要使用<code>-all_load</code>或者<code>-force_load</code>了。<br></p>
+<p><code>-all_load</code>会让链接器把所有找到的目标文件都加载到可执行文件中，但是千万不要随便使用这个参数！假如你使用了不止一个静态库文件，然后又使用了这个参数，那么你很有可能会遇到<code>ld: duplicate symbol</code>错误，因为不同的库文件里面可能会有相同的目标文件，所以建议在遇到<code>-ObjC</code>失效的情况下使用<code>-force_load</code>参数。</p>
+<p><code>-force_load</code>所做的事情跟<code>-all_load</code>其实是一样的，但是<code>-force_load</code>需要指定要进行全部加载的库文件的路径，这样的话，你就只是完全加载了一个库文件，不影响其余库文件的按需加载。</p>
 
         
       </div>
@@ -174,8 +170,12 @@
         
           <div class="post-tags">
             
-              <a href="/tags/Python/">
-                #Python
+              <a href="/tags/iOS/">
+                #iOS
+              </a>
+            
+              <a href="/tags/转载/">
+                #转载
               </a>
             
           </div>
@@ -185,13 +185,11 @@
           <div class="post-nav">
             <div class="post-nav-prev post-nav-item">
               
-                <a href="/2015/04/27/Python-Spider-3/">Python爬虫学习（三）</a>
-              
             </div>
 
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2015/04/25/Python-Spider-1/">Python爬虫学习（一）</a>
+                <a href="/2015/05/06/hook-sub-xxx-functions-in-IDA/">如何hook那些在IDA中显示为sub_xxx的函数</a>
               
             </div>
           </div>
@@ -208,8 +206,8 @@
   
     <div class="comments" id="comments">
       
-        <div class="ds-thread" data-thread-key="2015/04/25/Python-Spider-2/"
-             data-title="Python爬虫学习（二）" data-url="http://jatwaston.github.io/2015/04/25/Python-Spider-2/">
+        <div class="ds-thread" data-thread-key="2015/05/11/Other-Linker-Flags/"
+             data-title="关于Xcode的Other Linker Flags" data-url="http://jatwaston.github.io/2015/05/11/Other-Linker-Flags/">
         </div>
 
       
@@ -299,7 +297,7 @@
         <div class="post-toc">
           
           
-            <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#回顾"><span class="nav-number">1.</span> <span class="nav-text">回顾</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何解析网页内容"><span class="nav-number">2.</span> <span class="nav-text">如何解析网页内容</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#通过字符串直接解析"><span class="nav-number">2.1.</span> <span class="nav-text">通过字符串直接解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通过正则表达式"><span class="nav-number">2.2.</span> <span class="nav-text">通过正则表达式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#获取淘宝MM的照片和资料"><span class="nav-number">3.</span> <span class="nav-text">获取淘宝MM的照片和资料</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#获取淘宝MM网站内容"><span class="nav-number">3.1.</span> <span class="nav-text">获取淘宝MM网站内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查看网页源码，找到自己感兴趣的内容"><span class="nav-number">3.2.</span> <span class="nav-text">查看网页源码，找到自己感兴趣的内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解析内容"><span class="nav-number">3.3.</span> <span class="nav-text">解析内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存起来，慢慢欣赏"><span class="nav-number">3.4.</span> <span class="nav-text">存起来，慢慢欣赏</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">4.</span> <span class="nav-text">后记</span></a></li></ol></div>
+            <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#链接器"><span class="nav-number">2.</span> <span class="nav-text">链接器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么会闪退"><span class="nav-number">3.</span> <span class="nav-text">为什么会闪退</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决方法"><span class="nav-number">4.</span> <span class="nav-text">解决方法</span></a></li></ol></div>
           
         </div>
         <div class="post-toc-indicator-bottom post-toc-indicator"></div>
